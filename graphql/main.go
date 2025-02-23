@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/99designs/gqlgen/handler"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -21,11 +21,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("AccountURL: %s, CatalogURL: %s, OrderURL: %s", cfg.AccountURL, cfg.CatalogURL, cfg.OrderURL)
+
 	s, err := NewGraphQLServer(cfg.AccountURL, cfg.CatalogURL, cfg.OrderURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/graphql", handler.GraphQL(s.ToExecutableSchema()))
-	http.Handle("playground", playground.Handler("devi", "/graphql"))
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	http.Handle("/graphql", handler.NewDefaultServer(s.ToExecutableSchema()))
+	http.Handle("/playground", playground.Handler("devi", "/graphql"))
+
+	log.Println("Server is running at http://localhost:9000/playground")
+	log.Fatal(http.ListenAndServe(":9000", nil))
 }
