@@ -6,9 +6,10 @@ services:
       context: .
       dockerfile: ./account/app.dockerfile
     depends_on:
-      - account_db
+      account_db:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgres://akhil:123456@account_db/akhil?sslmode=disable
+      DATABASE_URL: postgres://devisri:1234@account_db/Devi?sslmode=disable
     restart: on-failure
 
   catalog:
@@ -26,11 +27,12 @@ services:
       context: .
       dockerfile: ./order/app.dockerfile
     depends_on:
-      - order_db
+      order_db:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgres://akhil:123456@order_db/akhil?sslmode=disable
-      ACCOUNT_SERVICE_URL: account:8080
-      CATALOG_SERVICE_URL: catalog:8080
+      DATABASE_URL: postgres://devisri:1234@order_db/Devi?sslmode=disable
+      ACCOUNT_SERVICE_URL: http://account:8080
+      CATALOG_SERVICE_URL: http://catalog:8080
     restart: on-failure
 
   graphql:
@@ -38,14 +40,15 @@ services:
       context: .
       dockerfile: ./graphql/app.dockerfile
     ports:
-      - 8000:8080
+      - "8000:8080"
     depends_on:
       - account
       - catalog
+      - order
     environment:
-      ACCOUNT_SERVICE_URL: account:8080
-      CATALOG_SERVICE_URL: catalog:8080
-      ORDER_SERVICE_URL: order:8080
+      ACCOUNT_SERVICE_URL: http://account:8080
+      CATALOG_SERVICE_URL: http://catalog:8080
+      ORDER_SERVICE_URL: http://order:8080
     restart: on-failure
 
   account_db:
@@ -53,23 +56,35 @@ services:
       context: ./account
       dockerfile: ./db.dockerfile
     environment:
-      POSTGRES_DB: akhil
-      POSTGRES_USER: akhil
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: Devi
+      POSTGRES_USER: devisri
+      POSTGRES_PASSWORD: 1234
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "devisri"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   catalog_db:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
     environment:
       ES_JAVA_OPTS: -Xms1g -Xmx1g
       discovery.type: single-node
+    ports:
+      - "9200:9200"
 
   order_db:
     build:
       context: ./order
       dockerfile: ./db.dockerfile
     environment:
-      POSTGRES_DB: akhil
-      POSTGRES_USER: akhil
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: Devi
+      POSTGRES_USER: devisri
+      POSTGRES_PASSWORD: 1234
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "devisri"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
