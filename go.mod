@@ -7,7 +7,6 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.9
 	github.com/segmentio/ksuid v1.0.4
-	github.com/stripe/stripe-go v70.15.0+incompatible
 	github.com/tinrab/retry v1.0.0
 	github.com/vektah/gqlparser/v2 v2.5.22
 	google.golang.org/grpc v1.70.0
